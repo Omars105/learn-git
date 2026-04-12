@@ -8,24 +8,40 @@ pipeline {
     }
    
     stages {
-        stage('Build') {
-            when {
-                expression {
-                    params.DEPLOY == true
-                }
-            }
+        stage('init') {
+           
 
             steps {
-                echo 'Building...'
-              
+                script {
+                    gv = load "Groovy.script.groovy"
 
+                }
             }
+        } // Closes Stage
+
+        stage('Build') {
+           
+            steps {
+                script {
+                    gv.buildApp()
+                }
+
+            } // Closes Steps
         } // Closes Stage
         
         stage('Test') {
             steps {
-                echo 'Testing...'
-                echo "${params.VERSION}"
+                script {
+                    gv.testApp()
+                }
+            }
+        } // Closes Stage
+
+        stage('Deploy') {
+            steps {
+                script {
+                    gv.deployApp()
+                }
             }
         } // Closes Stage
     } // Closes ALL Stages
