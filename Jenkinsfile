@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             when {
                 expression {
-                    parameters.DEPLOY == true
+                    params.DEPLOY == true
                 }
             }
 
