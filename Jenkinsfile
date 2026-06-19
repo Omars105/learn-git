@@ -1,3 +1,5 @@
+def gv
+
 pipeline {
     agent any
     tools {
@@ -5,11 +7,16 @@ pipeline {
         dockerTool 'my-docker-cli'
     }
     stages {
+        stage('init'){
+            steps{
+                script { 
+                gv = load "./Groovy.script.groovy"
+            }
+        }
         stage('Build jar') {
             steps {
                 script {
-                echo 'Building the app...'
-                sh 'mvn package'
+                gv.buildJar()
             }
         }
         }
@@ -17,11 +24,7 @@ pipeline {
           stage('Build docker image') {
             steps {
                 script {
-                echo 'Building the docker image ...'
-                withCredentials([usernamePassword(credentialsId: 'omar-dockerhub-repo', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'docker build -t omar1015/omar-test:jma-2.0 .'
-                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push omar1015/omar-test:jma-2.0  '   
+                gv.buildDockerImage()   
                 }
             }
         }
@@ -30,7 +33,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    echo 'Deploying...'
+                    gv.deployApp()   
                     
                 }
                 
