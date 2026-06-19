@@ -1,15 +1,20 @@
-def buildApp() {
-echo 'building the app'
+def buildJar() {
+  echo 'Building the app...'
+    sh 'mvn package'
 }
 
-def testApp() {
-                echo 'Testing...'
-                echo "${params.VERSION}"
+def buildDockerImage() {
+  echo 'Building the docker image...'
+    withCredentials([usernamePassword(credentialsId: 'omar-dockerhub-repo', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker build -t omar1015/omar-test:jma-2.0 .'
+                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push omar1015/omar-test:jma-2.0  '   
+                }
 }
 
 def deployApp() {
                 echo 'Deploying...'
-                echo "deploying version ${params.VERSION}"
+                
 }
 
 
