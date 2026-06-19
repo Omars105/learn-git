@@ -7,27 +7,28 @@ pipeline {
         dockerTool 'my-docker-cli'
     }
     stages {
-        stage('init'){
-            steps{
-                script { 
-                gv = load "./Groovy.script.groovy"
-            }
-        }
-        stage('Build jar') {
+        stage('init') {
             steps {
                 script {
-                gv.buildJar()
-            }
-        }
-        }
-
-          stage('Build docker image') {
-            steps {
-                script {
-                gv.buildDockerImage()   
+                    gv = load "./Groovy.script.groovy"
                 }
             }
         }
+
+        stage('Build jar') {
+            steps {
+                script {
+                    gv.buildJar()
+                }
+            }
+        }
+
+        stage('Build docker image') {
+            steps {
+                script {
+                    gv.buildDockerImage()
+                }
+            }
         }
 
         stage('Deploy') {
