@@ -1,46 +1,35 @@
-def gv
-
 pipeline {
     agent any
-    tools {
-        maven 'maven-3.9'
-        dockerTool 'my-docker-cli'
+    stage("test"){
+        steps{
+            script {
+                echo "hello from test "
+                echo "Executing the pipeline for branch : ${BRANCH_NAME}"
+            }
+        }
     }
-    stages {
-        stage('init') {
-            steps {
-                script {
-                    gv = load "./Groovy.script.groovy"
-                }
+    stage("build jar") {
+        when {
+            expression { 
+                BRANCH_NAME == "main"
+             }
+        }
+        steps {
+            script {
+                echo "hello from build jar"
             }
         }
-
-        stage('Build jar') {
-            steps {
-                script {
-                    gv.buildJar()
-                }
+    }
+    stage("deploy") {
+        when {
+            expression { 
+                BRANCH_NAME == "main"
+             }
+        }
+        steps {
+            script {
+                echo "hello from deploy"
             }
         }
-
-        stage('Build docker image') {
-            steps {
-                script {
-                    gv.buildDockerImage()
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    gv.deployApp()   
-                    
-                }
-                
-            }
-        }
-     
- }
+    }
 }
-    
