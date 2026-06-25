@@ -28,7 +28,7 @@ tools   {
         stage("build Docker image") {
             steps {
                 script {
-                    dockerBuild()
+                    dockerBuild 'omar1015/omar-test:jma-3.0'
                 }
             }
         }
