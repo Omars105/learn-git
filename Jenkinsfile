@@ -25,10 +25,12 @@ tools   {
                 }
             }
         }
-        stage("build Docker image") {
+        stage("build,login and push docker image") {
             steps {
                 script {
-                    dockerBuild 'omar1015/omar-test:jma-3.0'
+                    dockerBuild 'omar1015/omar-test:jma-4.0'
+                    dockerlogin()
+                    dockerpush 'omar1015/omar-test:jma-4.0'
                 }
             }
         }
