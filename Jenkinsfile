@@ -1,35 +1,33 @@
+def gv
+
 pipeline {
     agent any
     stages {
+        stage("init") {
+            steps {
+                script {
+                    gv = load "Groovy.script.groovy"
+                }
+            }
+        }
         stage("test") {
             steps {
                 script {
-                    echo "hello from test "
-                    echo "Executing the pipeline for branch : ${BRANCH_NAME}"
+                    echo "hello from test"
                 }
             }
         }
         stage("build jar") {
-            when {
-                expression {
-                    BRANCH_NAME == "main"
-                }
-            }
             steps {
                 script {
-                    echo "hello from build jar"
+                    gv.buildJar()
                 }
             }
         }
-        stage("deploy") {
-            when {
-                expression {
-                    BRANCH_NAME == "main"
-                }
-            }
+        stage("build docker image") {
             steps {
                 script {
-                    echo "hello from deploy"
+                    gv.buildDockerImage()
                 }
             }
         }
