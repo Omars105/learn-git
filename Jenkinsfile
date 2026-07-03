@@ -9,12 +9,16 @@ pipeline {
             steps {
                 script {
                     echo "hello from increment version"
-                    sh 'mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} versions:commit'
-                    def Omar = readFile('pom.xml')   =~ '<version>(.+)</version>'
-                    def version = Omar[0][1]
-                    env.IMAGE_TAG = "version-$BUILD_NUMBER"
+                    sh '''
+                        #!/bin/bash
+                        mvn build-helper:parse-version versions:set \
+                        -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion}
+                    '''
+                    sh 'mvn versions:commit'
 
-                   
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_TAG = "${version}-${BUILD_NUMBER}"
                 }
             }
         }
