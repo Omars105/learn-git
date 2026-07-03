@@ -1,4 +1,3 @@
-def gv
 
 pipeline {
     agent any
@@ -42,7 +41,7 @@ pipeline {
         stage("deploy application") {
             steps {
                 script {
-                    gv.deployApp()
+                    echo 'hello from deploy application'
                 }
             }
         }
