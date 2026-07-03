@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     echo "hello from build java application"
-                    sh 'mvn package'
+                    sh 'mvn clean package'
                 }
             }
         }
@@ -34,10 +34,10 @@ pipeline {
             steps {
                 script {
                     echo "hello from build docker image"
-                    sh "docker build -t omar1015/omar-test:$IMAGE_TAG ."
+                    sh "docker build -t omar1015/omar-test:jma-$IMAGE_TAG ."
                     withCredentials([usernamePassword(credentialsId: 'omar-dockerhub-repo', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
-                        sh "docker push omar1015/omar-test:$IMAGE_TAG"
+                        sh "docker push omar1015/omar-test:jma-$IMAGE_TAG"
                     }   
                 }
             }
