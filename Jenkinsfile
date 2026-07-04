@@ -9,11 +9,10 @@ pipeline {
             steps {
                 script {
                     echo "hello from increment version"
-                    sh '''
-                        #!/bin/bash
-                        mvn build-helper:parse-version versions:set \
-                        -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion}
-                    '''
+                    sh '''#!/bin/bash
+mvn build-helper:parse-version versions:set \
+-DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion}
+'''
                     sh 'mvn versions:commit'
 
                     def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
@@ -46,6 +45,23 @@ pipeline {
             steps {
                 script {
                     echo 'hello from deploy application'
+                }
+            }
+        }
+        stage('commit version in git') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'Github-jenkins-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                        sh "git config user.name ${GIT_USER}"
+                        sh 'git config user.email "jenkins@example.com"'
+                        sh 'git status'
+                        sh 'git branch'
+                        sh 'git config --list'
+                        sh "git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/Omars105/learn-git.git"
+                        sh 'git add .'
+                        sh "git commit -m 'version incremented to ${IMAGE_TAG}'"
+                        sh 'git push origin HEAD:increment-version-test'
+                    }
                 }
             }
         }
