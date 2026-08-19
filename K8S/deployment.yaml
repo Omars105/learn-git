@@ -16,7 +16,7 @@ spec:
                 - name: my-registry-key
             containers:
                 - name: $APP_NAME
-                  image: omar1015/omar-test:jma-${env.IMAGE_TAG}
+                  image: omar1015/omar-test:jma-$IMAGE_TAG
                   imagePullPolicy: Always
                   ports:
                       - containerPort: 8080

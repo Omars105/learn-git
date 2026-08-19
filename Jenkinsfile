@@ -51,8 +51,8 @@ mvn build-helper:parse-version versions:set \
                 script {
                     echo 'hello from deploy application'
                     sh 'aws eks update-kubeconfig  --region eu-north-1 --name jenkins-test'
-                    sh 'envsubst "${APP_NAME} ${IMAGE_TAG}" < K8S/deployment.yaml | kubectl apply -f -'
-                    sh 'envsubst "${APP_NAME}" < K8S/service.yaml | kubectl apply -f -'
+                    sh "envsubst '\$APP_NAME \$IMAGE_TAG' < K8S/deployment.yaml | kubectl apply -f -"
+                    sh "envsubst '\$APP_NAME' < K8S/service.yaml | kubectl apply -f -"
                 }
             }
         }
