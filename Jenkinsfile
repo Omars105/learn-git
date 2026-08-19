@@ -1,45 +1,77 @@
-def gv
 
-pipeline {   
+pipeline {
     agent any
     tools {
         maven 'maven-3.9'
     }
     stages {
-        stage("init") {
+        stage('increment version') {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    echo "hello from increment version"
+                    sh '''#!/bin/bash
+mvn build-helper:parse-version versions:set \
+-DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion}
+'''
+                    sh 'mvn versions:commit'
+
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_TAG = "${version}-${BUILD_NUMBER}"
                 }
             }
         }
-        stage("build jar") {
+        stage("build java application") {
             steps {
                 script {
-                    gv.buildJar()
-
+                    echo "hello from build java application"
+                    sh 'mvn clean package'
                 }
             }
         }
-
-        stage("build image") {
+        stage("build docker image") {
             steps {
                 script {
-                    gv.buildImage()
+                    echo "hello from build docker image"
+                    sh "docker build -t omar1015/omar-test:jma-$IMAGE_TAG ."
+                    withCredentials([usernamePassword(credentialsId: 'omar-dockerhub-repo', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin'
+                        sh "docker push omar1015/omar-test:jma-$IMAGE_TAG"
+                    }   
                 }
             }
         }
-
-        stage("deploy") {
+        stage("deploy application") {
             environment {
                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
                 AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws_secret_access_key_id')
+                APP_NAME = 'java-maven-app'
             }
             steps {
                 script {
-                    gv.deployApp()
+                    echo 'hello from deploy application'
+                    sh 'aws eks update-kubeconfig  --region eu-north-1 --name jenkins-test'
+                    sh 'envsubst "${APP_NAME} ${IMAGE_TAG}" < K8S/deployment.yaml | kubectl apply -f -'
+                    sh 'envsubst "${APP_NAME}" < K8S/service.yaml | kubectl apply -f -'
                 }
             }
-        }               
-    } 
-} 
+        }
+        stage('commit version in git') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'Github-jenkins-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                        sh "git config user.name ${GIT_USER}"
+                        sh 'git config user.email "jenkins@example.com"'
+                        sh 'git status'
+                        sh 'git branch'
+                        sh 'git config --list'
+                        sh "git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/Omars105/learn-git.git"
+                        sh 'git add .'
+                        sh "git commit -m 'version incremented to ${IMAGE_TAG}'"
+                        sh 'git push origin HEAD:increment-version-test'
+                    }
+                }
+            }
+        }
+    }
+}
